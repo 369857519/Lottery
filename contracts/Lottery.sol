@@ -17,7 +17,7 @@ contract Lottery{
 
   //map用来存储参与的人
   mapping(uint => address[]) public peoples;
-  mapping(address => bool) public peoplesRecord;
+  mapping(uint => uint) public lengthOfOneBet;
 
 
   //两个事件方便显示
@@ -30,16 +30,15 @@ contract Lottery{
     ticketPriace=0.1 ether;
     startTime= now;
     bound=6;
-    //
-    Clear();
+    //初始化数组
+    clear();
   }
 
   //清空下注
-  function Clear(){
+  function clear(){
     for(uint i=0;i<bound;i++){
-      peoples[i]=new address[];
+      lengthOfOneBet[i]=0;
     }
-    peoplesRecord=new address[];
   }
 
   //下注
@@ -49,11 +48,14 @@ contract Lottery{
     //确认在下注时间内
     if((now-startTime)>gameTime)throw;
     //下注，并做记录
-    if(peoplesRecord[gambler]==false){
+    //如果数组满了，就push进新的元素
+    if(peoples[betNum].length==lengthOfOneBet[betNum]){
       peoples[betNum].push(gambler);
-      peoplesRecord[gambler]=true;  
-      betted(msg.sender,betNum)
+    }else{
+      peoples[betNum][betNum]=gambler;
     }
+    //出发一下事件
+    betted(msg.sender,betNum);
   }
 
   //开奖
@@ -61,10 +63,12 @@ contract Lottery{
     var resNum=uint256(block.blockhash(block.number-1))%bound;
     //去一部分作为奖金，并进行发奖
     var totalPrize=this.balance * 3 / 4;
-    var winners=peoples[resNum]
-    if(winners.length>0){
-      finalPrize=totalPrize / winners.length;
-      for(uint i=0;i<winners.length;i++){
+    var winners=peoples[resNum];
+    //判断这个下注中的人数是否大于0
+    if(lengthOfOneBet[resNum]>0){
+      //算一下奖金
+      var finalPrize=totalPrize / lengthOfOneBet[resNum];
+      for(uint i=0;i<lengthOfOneBet[resNum];i++){
         if(!winners[i].send(finalPrize)) throw;
       }
     }
@@ -73,6 +77,4 @@ contract Lottery{
     clear();
     drawn(msg.sender,resNum,winners.length);
   }
-
-
 }
