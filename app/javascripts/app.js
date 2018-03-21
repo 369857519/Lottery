@@ -1,19 +1,16 @@
 // Import the page's CSS. Webpack will know what to do with it.
 import "../stylesheets/app.css";
-
-// Import libraries we need.
 import { default as Web3} from 'web3';
 import { default as contract } from 'truffle-contract'
+import lottery_artifacts from '../../build/contracts/Lottery.json'
 
-// Import our contract artifacts and turn them into usable abstractions.
-import metacoin_artifacts from '../../build/contracts/MetaCoin.json'
+//小项目临时用dom操作解决一下
+var d=document;
 
-// MetaCoin is our usable abstraction, which we'll use through the code below.
-var MetaCoin = contract(metacoin_artifacts);
+//获取Lottery
+var Lottery = contract(lottery_artifacts);
 
-// The following code is simple to show off interacting with your contracts.
-// As your needs grow you will likely need to change its form and structure.
-// For application bootstrapping, check out window.addEventListener below.
+//没有写用户系统，先用缓存搞一下
 var accounts;
 var account;
 
@@ -21,10 +18,11 @@ window.App = {
   start: function() {
     var self = this;
 
-    // Bootstrap the MetaCoin abstraction for Use.
-    MetaCoin.setProvider(web3.currentProvider);
+    //设置provider
+    Lottery.setProvider(web3.currentProvider);
 
-    // Get the initial account balance so it can be displayed.
+
+    //
     web3.eth.getAccounts(function(err, accs) {
       if (err != null) {
         alert("There was an error fetching your accounts.");
@@ -37,66 +35,43 @@ window.App = {
       }
 
       accounts = accs;
-      account = accounts[0];
-
-      self.refreshBalance();
+      //列出所有的用户
+      var select=d.getElementsByClassName('accountsSelect')[0]
+      for(var i=1;i<accounts.length;i++){
+        var option=d.createElement('option');
+        option.setAttribute('value',accounts[i]);
+        option.text=accounts[i];
+        select.append(option);
+      }
     });
   },
 
-  setStatus: function(message) {
-    var status = document.getElementById("status");
-    status.innerHTML = message;
+  gotoBet:function(currentBet,currentAccount){
+    var that=this;
+    Lottery.deployed().then(function(instance) {
+      instance.gotoBet(currentBet,currentAccount);
+    }).then(()=>{
+      alert('请重新选择账号和bet')
+      that.setState('交易成功')
+    }).catch(()=>{
+      that.setState('下注失败')
+    })
   },
 
-  refreshBalance: function() {
-    var self = this;
 
-    var meta;
-    MetaCoin.deployed().then(function(instance) {
-      meta = instance;
-      return meta.getBalance.call(account, {from: account});
-    }).then(function(value) {
-      var balance_element = document.getElementById("balance");
-      balance_element.innerHTML = value.valueOf();
-    }).catch(function(e) {
-      console.log(e);
-      self.setStatus("Error getting balance; see log.");
-    });
-  },
-
-  sendCoin: function() {
-    var self = this;
-
-    var amount = parseInt(document.getElementById("amount").value);
-    var receiver = document.getElementById("receiver").value;
-
-    this.setStatus("Initiating transaction... (please wait)");
-
-    var meta;
-    MetaCoin.deployed().then(function(instance) {
-      meta = instance;
-      return meta.sendCoin(receiver, amount, {from: account});
-    }).then(function() {
-      self.setStatus("Transaction complete!");
-      self.refreshBalance();
-    }).catch(function(e) {
-      console.log(e);
-      self.setStatus("Error sending coin; see log.");
-    });
+  setState:function(text){
+    d.getElementsByClassName('stateDisplay')[0].innerHtml=text;
   }
 };
 
 window.addEventListener('load', function() {
-  // Checking if Web3 has been injected by the browser (Mist/MetaMask)
-  // if (typeof web3 !== 'undefined') {
-  //   console.warn("Using web3 detected from external source. If you find that your accounts don't appear or you have 0 MetaCoin, ensure you've configured that source properly. If using MetaMask, see the following link. Feel free to delete this warning. :) http://truffleframework.com/tutorials/truffle-and-metamask")
-  //   // Use Mist/MetaMask's provider
-  //   window.web3 = new Web3(web3.currentProvider);
-  // } else {
-    console.warn("No web3 detected. Falling back to http://127.0.0.1:9545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to Metamask for development. More info here: http://truffleframework.com/tutorials/truffle-and-metamask");
-    // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
     window.web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"));
-  // }
-
-  App.start();
+    App.start();
+    Lottery.web3.eth.defaultAccount=Lottery.web3.eth.coinbase
+    //投注时间
+    d.getElementsByClassName('ensureBet')[0].onclick=function(){
+      var currentAccount=d.getElementsByClassName('accountsSelect')[0].value;
+      var currentBet=d.getElementsByClassName('betSelect')[0].value;
+      App.gotoBet(currentBet,currentAccount)
+    }
 });

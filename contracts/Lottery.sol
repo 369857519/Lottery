@@ -42,7 +42,7 @@ contract Lottery{
   }
 
   //下注
-  function makeBet(uint betNum,address gambler){
+  function gotoBet(uint betNum,address gambler){
     //验证betNum合法性
     require(betNum>=0&&betNum<6);
     //确认在下注时间内
@@ -52,7 +52,7 @@ contract Lottery{
     if(peoples[betNum].length==lengthOfOneBet[betNum]){
       peoples[betNum].push(gambler);
     }else{
-      peoples[betNum][betNum]=gambler;
+      peoples[betNum][lengthOfOneBet[betNum]]=gambler;
     }
     //出发一下事件
     betted(msg.sender,betNum);
