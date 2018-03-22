@@ -4,6 +4,18 @@
   <title>GambleGame</title>
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   <script src="./app.js"></script>
+  <style>
+  .header{
+    position: fixed;
+    right: 60px;
+    top: 30px;
+  }
+  .stateDisplay{
+    position: fixed;
+    right: 10px;
+    top: 100px;
+  }
+  </style>
 </head>
 <body>
   <h1>GambleGame</h1>
@@ -22,6 +34,12 @@
     </select>
     <input class="ensureBet" type="button" value="确定">
   </div>
+  <div class="participantsList">
+
+  </div>
+  <input class="draw" type="button" value="开奖">
+
+  <h3 class="header">状态栏</h3>
   <div class="stateDisplay"></div>
 </body>
 </html>

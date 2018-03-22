@@ -22,7 +22,7 @@ window.App = {
     Lottery.setProvider(web3.currentProvider);
 
 
-    //
+    //获取账户列表
     web3.eth.getAccounts(function(err, accs) {
       if (err != null) {
         alert("There was an error fetching your accounts.");
@@ -44,6 +44,9 @@ window.App = {
         select.append(option);
       }
     });
+
+    //绑定事件
+    App.bindContractEvents();
   },
 
   gotoBet:function(currentBet,currentAccount){
@@ -51,16 +54,47 @@ window.App = {
     Lottery.deployed().then(function(instance) {
       instance.gotoBet(currentBet,currentAccount);
     }).then(()=>{
-      alert('请重新选择账号和bet')
-      that.setState('交易成功')
+      that.setState('下注成功')
     }).catch(()=>{
       that.setState('下注失败')
     })
   },
 
+  draw:function(){
+    var that=this;
+    Lottery.deployed().then(function(instance) {
+      instance.gotoBet(currentBet,currentAccount);
+    }).then(()=>{
+      that.setState('开奖成功')
+    }).catch(()=>{
+      that.setState('开奖失败')
+    })
+  },
+
 
   setState:function(text){
-    d.getElementsByClassName('stateDisplay')[0].innerHtml=text;
+    d.getElementsByClassName('stateDisplay')[0].innerHTML=text;
+  },
+
+  bindContractEvents:function(){
+    var that=this;
+    Lottery.deployed().then(function(instance) {
+      instance.betted().watch(function(error,e){
+        var div=d.createElement('div');
+        div.innerHTML="玩家"+e.args.better+'下注'+e.args.betNum.toString(10);
+        d.getElementsByClassName('participantsList')[0].append(div)
+      });
+
+      
+      // instance.drawn().watch(function(drawer,winner,numOfWinner){
+      //   console.log(drawer)
+      //   console.log(numOfWinner)
+      // });
+    }).then(()=>{
+      that.setState('绑定事件成功')
+    }).catch(()=>{
+      that.setState('绑定事件失败')
+    })
   }
 };
 
@@ -68,10 +102,15 @@ window.addEventListener('load', function() {
     window.web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"));
     App.start();
     Lottery.web3.eth.defaultAccount=Lottery.web3.eth.coinbase
-    //投注时间
+    //投注
     d.getElementsByClassName('ensureBet')[0].onclick=function(){
       var currentAccount=d.getElementsByClassName('accountsSelect')[0].value;
       var currentBet=d.getElementsByClassName('betSelect')[0].value;
+      App.gotoBet(currentBet,currentAccount)
+    }
+
+    //开奖
+    d.getElementsByClassName('draw')[0].onclick=function(){
       App.gotoBet(currentBet,currentAccount)
     }
 });

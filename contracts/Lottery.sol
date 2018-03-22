@@ -6,14 +6,8 @@ contract Lottery{
   //门票
   uint public ticketPriace;
 
-  //开始时间
-  uint public startTime;
-
   //掷骰子游戏，可能出现的情况
   uint public bound;
-
-  //下注时间和等待时间
-  uint public gameTime;
 
   //map用来存储参与的人
   mapping(uint => address[]) public peoples;
@@ -28,7 +22,6 @@ contract Lottery{
   //构造函数
   function Lottery(){
     ticketPriace=0.1 ether;
-    startTime= now;
     bound=6;
     //初始化数组
     clear();
@@ -44,9 +37,7 @@ contract Lottery{
   //下注
   function gotoBet(uint betNum,address gambler){
     //验证betNum合法性
-    require(betNum>=0&&betNum<6);
-    //确认在下注时间内
-    if((now-startTime)>gameTime)throw;
+    require(betNum>0&&betNum<7);
     //下注，并做记录
     //如果数组满了，就push进新的元素
     if(peoples[betNum].length==lengthOfOneBet[betNum]){
@@ -54,13 +45,13 @@ contract Lottery{
     }else{
       peoples[betNum][lengthOfOneBet[betNum]]=gambler;
     }
-    //出发一下事件
-    betted(msg.sender,betNum);
+    //触发一下事件
+    betted(gambler,betNum);
   }
 
   //开奖
   function draw() payable public{
-    var resNum=uint256(block.blockhash(block.number-1))%bound;
+    var resNum=uint256(block.blockhash(block.number-1))%bound+1;
     //去一部分作为奖金，并进行发奖
     var totalPrize=this.balance * 3 / 4;
     var winners=peoples[resNum];
@@ -69,7 +60,7 @@ contract Lottery{
       //算一下奖金
       var finalPrize=totalPrize / lengthOfOneBet[resNum];
       for(uint i=0;i<lengthOfOneBet[resNum];i++){
-        if(!winners[i].send(finalPrize)) throw;
+        require(winners[i].send(finalPrize));
       }
     }
 
