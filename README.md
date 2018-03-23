@@ -10,8 +10,8 @@
 
   npm install
   
-  #启动ganache
-  sh startGanache.sh
+  #启动ganache    
+  sh startGanache.sh    
   
   #migrate，并启动页面服务器
   sh startServer.sh
@@ -29,8 +29,8 @@ There will be 3 result which will be calculated from block's hash mod 3 shown as
 
   npm install
   
-  #start ganache
-  sh startGanache.sh
+  #start ganache    
+  sh startGanache.sh    
   
-  #migrate and serve static pages
+  #migrate and serve static pages   
   sh startServer
