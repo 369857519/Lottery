@@ -12,6 +12,7 @@
   
   #启动ganache
   sh startGanache.sh
+  
   #migrate，并启动页面服务器
   sh startServer.sh
   
