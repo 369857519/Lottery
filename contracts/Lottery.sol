@@ -23,7 +23,7 @@ contract Lottery{
   //构造函数
   function Lottery() public{
     ticketPriace=0.1 ether;
-    bound=2;
+    bound=3;
     //初始化数组
     clear();
   }
@@ -38,7 +38,7 @@ contract Lottery{
   //下注
   function gotoBet(uint betNum,address gambler){
     //验证betNum合法性
-    require(betNum>0&&betNum<3);
+    require(betNum>0&&betNum<4);
     //下注，并做记录
     //如果数组满了，就push进新的元素
     if(peoples[betNum].length==lengthOfOneBet[betNum]||peoples[betNum].length==0){
