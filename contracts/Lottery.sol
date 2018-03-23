@@ -19,17 +19,18 @@ contract Lottery{
   event drawn(address drawer, uint winnerNum, uint numOfWinners);
   event betted(address better, uint betNum);
 
+
   //构造函数
-  function Lottery(){
+  function Lottery() public{
     ticketPriace=0.1 ether;
-    bound=6;
+    bound=2;
     //初始化数组
     clear();
   }
 
   //清空下注
-  function clear(){
-    for(uint i=0;i<bound;i++){
+  function clear() public{
+    for(uint i=0;i<=bound;i++){
       lengthOfOneBet[i]=0;
     }
   }
@@ -37,23 +38,24 @@ contract Lottery{
   //下注
   function gotoBet(uint betNum,address gambler){
     //验证betNum合法性
-    require(betNum>0&&betNum<7);
+    require(betNum>0&&betNum<3);
     //下注，并做记录
     //如果数组满了，就push进新的元素
-    if(peoples[betNum].length==lengthOfOneBet[betNum]){
+    if(peoples[betNum].length==lengthOfOneBet[betNum]||peoples[betNum].length==0){
       peoples[betNum].push(gambler);
     }else{
       peoples[betNum][lengthOfOneBet[betNum]]=gambler;
     }
+    lengthOfOneBet[betNum]++;
     //触发一下事件
     betted(gambler,betNum);
   }
 
   //开奖
   function draw() payable public{
-    var resNum=uint256(block.blockhash(block.number-1))%bound+1;
+    uint resNum=uint256(block.blockhash(block.number-1))%bound+1;
     //去一部分作为奖金，并进行发奖
-    var totalPrize=this.balance * 3 / 4;
+    var totalPrize=this.balance * 4 / 5;
     var winners=peoples[resNum];
     //判断这个下注中的人数是否大于0
     if(lengthOfOneBet[resNum]>0){
@@ -63,9 +65,8 @@ contract Lottery{
         require(winners[i].send(finalPrize));
       }
     }
-
+    drawn(msg.sender,resNum,lengthOfOneBet[resNum]);
     //clear
     clear();
-    drawn(msg.sender,resNum,winners.length);
   }
 }

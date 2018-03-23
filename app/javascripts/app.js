@@ -63,7 +63,7 @@ window.App = {
   draw:function(){
     var that=this;
     Lottery.deployed().then(function(instance) {
-      instance.gotoBet(currentBet,currentAccount);
+      instance.draw();
     }).then(()=>{
       that.setState('开奖成功')
     }).catch(()=>{
@@ -86,10 +86,15 @@ window.App = {
       });
 
       
-      // instance.drawn().watch(function(drawer,winner,numOfWinner){
-      //   console.log(drawer)
-      //   console.log(numOfWinner)
-      // });
+      instance.drawn().watch(function(error,event){
+        var div=d.createElement('div');
+        div.innerHTML="开始下一局-----------------------------------";
+        d.getElementsByClassName('participantsList')[0].append(div)
+
+        d.getElementsByClassName('drawInfo')[0].innerHTML="开奖人:"+event.args.drawer+
+        "  中奖人数:"+event.args.numOfWinners.toString(10)+
+        "  中奖号码:"+event.args.winnerNum.toString(10)
+      });
     }).then(()=>{
       that.setState('绑定事件成功')
     }).catch(()=>{
@@ -111,6 +116,6 @@ window.addEventListener('load', function() {
 
     //开奖
     d.getElementsByClassName('draw')[0].onclick=function(){
-      App.gotoBet(currentBet,currentAccount)
+      App.draw()
     }
 });
