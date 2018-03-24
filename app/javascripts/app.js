@@ -12,7 +12,6 @@ var Lottery = contract(lottery_artifacts);
 
 //没有写用户系统，先用缓存搞一下
 var accounts;
-var account;
 
 window.App = {
   start: function() {
