@@ -50,13 +50,18 @@ window.App = {
 
   gotoBet:function(currentBet,currentAccount){
     var that=this;
-    Lottery.deployed().then(function(instance) {
-      instance.gotoBet(currentBet,currentAccount);
-    }).then(()=>{
-      that.setState('下注成功')
-    }).catch(()=>{
+    var lotteryInstance;
+    var ld=Lottery.deployed().then((instance)=>{
+      lotteryInstance=instance;
+      return instance.ticketPrice.call()
+    }).then((price)=>{
+      return lotteryInstance.gotoBet.sendTransaction(currentBet,{from:currentAccount,value:price,gas:100000})
+    }).then((tx)=>{
+      that.setState('下注成功');
+    }).catch((e)=>{
+      console.log(e);
       that.setState('下注失败')
-    })
+    })  
   },
 
   draw:function(){
@@ -84,6 +89,13 @@ window.App = {
         d.getElementsByClassName('participantsList')[0].append(div)
       });
 
+      instance.Print().watch(function(error,e){
+        console.log(error);
+        console.log(e);
+        console.log(e.args.price.toString(10));
+        console.log(e.args.value.toString(10));
+
+      });
       
       instance.drawn().watch(function(error,event){
         var div=d.createElement('div');
@@ -96,7 +108,8 @@ window.App = {
       });
     }).then(()=>{
       that.setState('绑定事件成功')
-    }).catch(()=>{
+    })
+    .catch(()=>{
       that.setState('绑定事件失败')
     })
   }

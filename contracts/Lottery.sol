@@ -4,7 +4,7 @@ pragma solidity ^0.4.17;
 //这是一个掷骰子游戏，每个人
 contract Lottery{
   //门票
-  uint public ticketPriace;
+  uint public ticketPrice;
 
   //掷骰子游戏，可能出现的情况
   uint public bound;
@@ -14,15 +14,16 @@ contract Lottery{
   mapping(uint => uint) public lengthOfOneBet;
 
 
+
   //两个事件方便显示
   // Events
   event drawn(address drawer, uint winnerNum, uint numOfWinners);
   event betted(address better, uint betNum);
-
+  event Print(uint value,uint price);
 
   //构造函数
-  function Lottery() public{
-    ticketPriace=0.1 ether;
+  function Lottery() payable public{
+    ticketPrice=0.1 ether;
     bound=3;
     //初始化数组
     clear();
@@ -36,11 +37,15 @@ contract Lottery{
   }
 
   //下注
-  function gotoBet(uint betNum,address gambler){
+  function gotoBet(uint betNum) payable public{
     //验证betNum合法性
     require(betNum>0&&betNum<4);
-    //下注，并做记录
-    //如果数组满了，就push进新的元素
+    // //下注，并做记录
+    require(msg.value == ticketPrice);
+    Print(msg.value,ticketPrice);
+    //查看现在的参与者
+    var gambler=msg.sender;
+    // //如果数组满了，就push进新的元素
     if(peoples[betNum].length==lengthOfOneBet[betNum]||peoples[betNum].length==0){
       peoples[betNum].push(gambler);
     }else{
@@ -52,7 +57,7 @@ contract Lottery{
   }
 
   //开奖
-  function draw() payable public{
+  function draw() public{
     uint resNum=uint256(block.blockhash(block.number-1))%bound+1;
     //去一部分作为奖金，并进行发奖
     var totalPrize=this.balance * 4 / 5;
