@@ -22,7 +22,7 @@ contract Lottery{
   event Print(uint value,uint price);
 
   //构造函数
-  function Lottery() payable public{
+  function Lottery() public{
     ticketPrice=0.1 ether;
     bound=3;
     //初始化数组
