@@ -21,6 +21,12 @@ contract Lottery{
   event betted(address better, uint betNum);
   event Print(uint value,uint price);
 
+  modifier onlyByOrigin()
+  {
+      require(msg.sender == tx.origin)
+      _
+  }
+
   //构造函数
   function Lottery() public{
     ticketPrice=0.1 ether;
@@ -57,7 +63,7 @@ contract Lottery{
   }
 
   //开奖
-  function draw() public{
+  function draw() public onlyByOrigin{
     uint resNum=uint256(block.blockhash(block.number-1))%bound+1;
     //去一部分作为奖金，并进行发奖
     var totalPrize=this.balance * 4 / 5;
